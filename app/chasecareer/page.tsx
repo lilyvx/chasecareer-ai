@@ -3,10 +3,13 @@
 import { useRef, useState, useEffect} from "react";
 import { ScanLine, FileCheck2 } from "lucide-react";
 import DashboardHeader from "@/components/DashboardHeader";
+import { useApiHealth } from "../hook/useApiHealth";
 
 export default function DashboardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+  const { status, error } = useApiHealth();
+
 
   return (
   
