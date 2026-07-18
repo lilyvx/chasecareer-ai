@@ -9,7 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct; //fixed with jakarta import
+//import javax.annotation.PostConstruct;
 import javax.crypto.SecretKey;
 
 import java.util.Date;
@@ -26,7 +27,7 @@ public class JwtUtil {
 
     private SecretKey key;
 
-    @PostConstruct
+    @PostConstruct 
     public void init() {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
