@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, ArrowUpRight } from "lucide-react";
 import Logo from "./Logo";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hook/useAuth";
 
 type AuthMode = "login" | "register";
 
@@ -28,7 +30,30 @@ const copy = {
 
 export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const { register, login, error, loading } = useAuth();
+  const router = useRouter();
   const c = copy[mode];
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (mode === "register" && password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    const success =
+    mode === "login"
+        ? await login(username, password)
+        : await register(username, email, password);
+
+    if (success) router.push("/chasecareer");
+  }
 
   return (
     <div className="flex min-h-screen w-full">
@@ -45,26 +70,30 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
           </h1>
           <p className="mt-2 text-[15px] text-zinc-500">{c.subheading}</p>
 
-          <form className="mt-8 flex flex-col gap-4">
+          <form className="mt-8 flex flex-col gap-4" onSubmit={handleSubmit}>
+            <Field label="Username">
+              <input
+                type="text"
+                placeholder="janedoe"
+                className="auth-input"
+                autoComplete="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Field>
+
             {mode === "register" && (
-              <Field label="Full name">
+              <Field label="Email">
                 <input
-                  type="text"
-                  placeholder="Jane Doe"
+                  type="email"
+                  placeholder="you@example.com"
                   className="auth-input"
-                  autoComplete="name"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Field>
             )}
-
-            <Field label="Email">
-              <input
-                type="email"
-                placeholder="you@example.com"
-                className="auth-input"
-                autoComplete="email"
-              />
-            </Field>
 
             <Field
               label="Password"
@@ -87,6 +116,8 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                   autoComplete={
                     mode === "login" ? "current-password" : "new-password"
                   }
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <button
                   type="button"
@@ -110,15 +141,20 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
                   placeholder="Re-enter your password"
                   className="auth-input"
                   autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </Field>
             )}
 
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
             <button
               type="submit"
-              className="mt-2 flex h-11 w-full items-center justify-center rounded-lg bg-zinc-900 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+              disabled={loading}
+              className="mt-2 flex h-11 w-full items-center justify-center rounded-lg bg-zinc-900 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:opacity-60"
             >
-              {c.submitLabel}
+              {loading ? "Please wait..." : c.submitLabel}
             </button>
           </form>
 

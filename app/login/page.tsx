@@ -8,3 +8,4 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return <AuthForm mode="login" />;
 }
+

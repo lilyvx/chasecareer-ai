@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+backend/chase/data/
+backend/chase/target/
+backend/chase/.mvn/
