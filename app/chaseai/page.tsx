@@ -1,24 +1,77 @@
+"use client";
+
+import { useState } from "react";
 import { Paperclip, ArrowUp, Sparkles } from "lucide-react";
 import ChatSidebar from "@/components/chat/ChatSidebar";
+import { useRouter } from "next/navigation";
+import { useLatestDocument } from "@/app/hook/useLatestDocument";
 
-const messages = [
-  {
-    role: "assistant" as const,
-    text: "Hi! I'm your ChaseCareer assistant. Upload a resume. What would you like to work on?",
-  },
-  {
-    role: "user" as const,
-    text: "Im interested in devops role, do i qualify for it?”",
-  },
-  {
-    role: "assistant" as const,
-    text: "Here's a version that leads with impact instead of duties:",
-    highlight:
-      "Led a team of 5 engineers, shipping 3 major product releases and cutting sprint cycle time by 20%.",
-  },
-];
+type Message = {
+  role: "assistant" | "user";
+  text: string;
+};
 
 export default function ChatbotPage() {
+  const { extractedText, error: documentError, loading: documentLoading } = useLatestDocument();
+  const router = useRouter();
+
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      text: "Hi! I'm your ChaseCareer assistant. What would you like to work on?",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+
+  async function handleSend() {
+    if (!input.trim()) return;
+
+    const userMessage: Message = { role: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setSending(true);
+
+    //placeholder until the real chat endpoint created
+  
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: "(This is a placeholder response — the real analysis endpoint isn't wired up yet.)" },
+      ]);
+      setSending(false);
+    }, 800);
+  }
+
+  //still check whether the user has a resume on file
+  if (documentLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-white">
+        <p className="text-sm text-zinc-400">Loading your data...</p>
+      </div>
+    );
+  }
+
+  //no resume uploaded yet
+  if (documentError) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-white text-center">
+        <p className="text-lg font-semibold text-zinc-900">No resume on file yet</p>
+        <p className="max-w-sm text-sm text-zinc-500">
+          Upload your resume first so the ChaseAI can give you personalized guidance.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push("/chasecareer")}
+          className="mt-2 inline-flex h-[44px] items-center gap-2 rounded-lg bg-zinc-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+        >
+          Go to Scanner
+        </button>
+      </div>
+    );
+  }
+
+  //resume loaded, ready to chat
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white">
       <ChatSidebar />
@@ -30,7 +83,7 @@ export default function ChatbotPage() {
               ChaseCareer Assistant
             </p>
             <p className="text-xs text-zinc-400">
-              Resume &amp; job-search help, on demand
+              Career seach on demand
             </p>
           </div>
         </header>
@@ -47,11 +100,6 @@ export default function ChatbotPage() {
                     <p className="max-w-lg text-[15px] leading-relaxed text-zinc-700">
                       {m.text}
                     </p>
-                    {m.highlight && (
-                      <p className="max-w-lg rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-[15px] leading-relaxed text-zinc-900">
-                        {m.highlight}
-                      </p>
-                    )}
                   </div>
                 </div>
               ) : (
@@ -61,6 +109,9 @@ export default function ChatbotPage() {
                   </p>
                 </div>
               )
+            )}
+            {sending && (
+              <p className="text-sm text-zinc-400">Assistant is typing...</p>
             )}
           </div>
         </main>
@@ -76,12 +127,22 @@ export default function ChatbotPage() {
             </button>
             <textarea
               rows={1}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
               placeholder="Ask about your resume, a job description, or interview prep..."
               className="max-h-32 flex-1 resize-none bg-transparent py-1.5 text-sm text-zinc-900 outline-none placeholder:text-zinc-400"
             />
             <button
               type="button"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white transition-colors hover:bg-zinc-700"
+              onClick={handleSend}
+              disabled={sending}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white transition-colors hover:bg-zinc-700 disabled:opacity-50"
               aria-label="Send message"
             >
               <ArrowUp className="h-4 w-4" />

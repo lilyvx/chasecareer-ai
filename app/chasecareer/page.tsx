@@ -13,7 +13,7 @@ export default function DashboardPage() {
   const [fileName, setFileName] = useState<string | null>(null);
   const { status, error } = useApiHealth();
   const { uploadDoc, extractedText, error: uploadError, loading } = useDocUpload();
-
+  const router = useRouter();
 
   return (
   
@@ -88,6 +88,14 @@ export default function DashboardPage() {
           <div className="mt-6 max-w-2xl rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-left text-sm text-zinc-700">
             <h3 className="mb-2 font-semibold text-zinc-900">Extracted Text Preview:</h3>
             <p className="whitespace-pre-wrap">{extractedText}</p>
+
+             <button
+              type="button"
+              onClick={() => router.push("/chaseai")}
+              className="mt-4 inline-flex h-[44px] items-center gap-2 rounded-lg bg-zinc-900 px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+              >
+              Looks good, continue to chat →
+            </button> 
           </div>
         )}//=========
 
