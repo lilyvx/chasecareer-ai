@@ -4,11 +4,15 @@ import { useRef, useState, useEffect} from "react";
 import { ScanLine, FileCheck2 } from "lucide-react";
 import DashboardHeader from "@/components/DashboardHeader";
 import { useApiHealth } from "../hook/useApiHealth";
+import { useDocUpload } from "../hook/useDocUpload";
+import { useRouter } from "next/navigation";
+
 
 export default function DashboardPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const { status, error } = useApiHealth();
+  const { uploadDoc, extractedText, error: uploadError, loading } = useDocUpload();
 
 
   return (
@@ -59,6 +63,33 @@ export default function DashboardPage() {
             {fileName}
           </div>
         )}
+
+        //=========
+         {fileName && (
+          <button
+            type="button"
+            onClick={() => {
+              if (fileInputRef.current?.files?.[0]) {
+                uploadDoc(fileInputRef.current.files[0]);
+              }
+            }}
+            disabled={loading}
+            className="mt-4 inline-flex h-[44px] items-center gap-2 rounded-lg bg-emerald-600 px-6 text-sm font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-60"
+          >
+            {loading ? "Extracting..." : "Confirm & Extract"}
+          </button>
+        )}
+
+        {uploadError && (
+          <p className="mt-4 text-sm text-red-500">{uploadError}</p>
+        )}
+
+        {extractedText && (
+          <div className="mt-6 max-w-2xl rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-left text-sm text-zinc-700">
+            <h3 className="mb-2 font-semibold text-zinc-900">Extracted Text Preview:</h3>
+            <p className="whitespace-pre-wrap">{extractedText}</p>
+          </div>
+        )}//=========
 
         <div className="mt-8 flex items-center gap-3 font-mono text-[11px] uppercase tracking-widest text-zinc-400">
           <span>Free forever</span>

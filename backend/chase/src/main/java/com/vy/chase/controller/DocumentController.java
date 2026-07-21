@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,6 +51,26 @@ public class DocumentController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+    @GetMapping("/latest")
+    public ResponseEntity<?> getLatestDocument(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            Document document = documentRepository.findTopByUserOrderByIdDesc(user)
+                    .orElseThrow(() -> new RuntimeException("No document found for this user"));
+
+            return ResponseEntity.ok(Map.of("extractedText", document.getExtractedSkills()));
+
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(404).body(Map.of("error", e.getMessage()));
         }
     }
 }
